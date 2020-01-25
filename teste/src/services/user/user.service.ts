@@ -30,8 +30,7 @@ export class UserService {
     async updateUser(login: LoginViewModel){
         const userList = await this.userRepository.getUsers();
         const foundLogin = userList.find(x =>
-            x.userLogin === login.userLogin &&
-            x.password === login.password);
+            x.userLogin === login.userLogin);
         if(foundLogin){
             
         }

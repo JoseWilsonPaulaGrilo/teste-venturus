@@ -7,7 +7,7 @@ export interface UserActivity {
     readonly _id: mongoose.Schema.Types.ObjectId;
     readonly userId: string;
     readonly userName: string;
-    readonly filename: string;
+    readonly fileName: string;
     readonly timestamp: Date;
     likes: string[];
     comments: UserActivityCommentDto[];
