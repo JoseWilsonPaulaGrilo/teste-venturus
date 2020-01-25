@@ -29,7 +29,8 @@ export class UserActivityRepository {
 
     async create(UserActivityDto: UserActivityDto){
         const newUserActivity = this.userActivityCollection(UserActivityDto);
-        return await newUserActivity.save();
+        await newUserActivity.save();
+        return await this.getById(newUserActivity._id);
     }
 
     async update(userActivity: UserActivity){

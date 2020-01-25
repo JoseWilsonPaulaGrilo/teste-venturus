@@ -7,12 +7,14 @@ import { UserActivityRepository } from 'src/repositories/user-activity-repositor
 import { UserActivity, UserActivitySchema } from 'src/domain/schemas/user-activity-schema';
 import { readFileSync } from 'fs';
 import { LikeOrDislikeViewModel } from 'src/domain/schemas/like-or-dislike.viewmodel';
+import { WebsocketGateway } from 'src/websocket/websocket.gateway';
 
 @Injectable()
 export class UserActivityService {
     constructor(
         private readonly userRepository: UserRepository,
-        private readonly userActivityRepository: UserActivityRepository){
+        private readonly userActivityRepository: UserActivityRepository,
+        private readonly websocketGateway: WebsocketGateway){
     }
 
     async getRecentUplads(index: string){
@@ -43,7 +45,10 @@ export class UserActivityService {
             userActivity.likes.push(user._id.toString());
         }
 
-        return await this.userActivityRepository.update(userActivity);
+        const updateUserctivity = await this.userActivityRepository.update(userActivity);
+        this.websocketGateway.notifyOnLike(userActivity._id, userActivity.userId);
+
+        return updateUserctivity;
     }
 
     async uploadImage(userId: string, fileName: string, description: string){
@@ -61,7 +66,8 @@ export class UserActivityService {
             ));
         }
 
-        return await this.userActivityRepository.create(uploadImageObj);
+        const createdUserActivity = await this.userActivityRepository.create(uploadImageObj);
+        return this.convertImagesToBase64ForOneFile(createdUserActivity);
     }
     convertImagesToBase64(userActivities: UserActivity[]){
         return Promise.all(
@@ -72,5 +78,11 @@ export class UserActivityService {
                 };
             }),
         );
+    }
+    convertImagesToBase64ForOneFile(userActivity: UserActivity){
+        return {
+            ...userActivity,
+            imgEncoded: readFileSync('../images/' + userActivity.fileName, 'base64'),
+        };
     }
 }
